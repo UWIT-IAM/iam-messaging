@@ -44,6 +44,11 @@ class AWS(object):
         response = dao.send_message(msg, context, cryptid, signid)
         return response
 
+    def get_all_topics(self):
+        dao = AWS_DAO(self._conf)
+        response = dao.get_all_topics()
+        return response
+
 
     # SQS actions
 
@@ -60,6 +65,11 @@ class AWS(object):
     def create_queue(self, name):
         dao = AWS_DAO(self._conf)
         response = dao.create_queue(name)
+        return response
+
+    def get_all_subscriptions_by_topic(self, name):
+        dao = AWS_DAO(self._conf)
+        response = dao.get_all_subscriptions_by_topic(name)
         return response
 
     def recv_message(self):

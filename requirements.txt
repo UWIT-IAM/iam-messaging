@@ -1,8 +1,5 @@
 boto
-azure
-simplejson>=2.1
+azure-servicebus
 python-dateutil>=2.1
 unittest2>=0.5.1
-# -e git+https://github.com/martinpaljak/M2Crypto.git#egg=M2Crypto
-M2Crypto>=0.22.3
 urllib3

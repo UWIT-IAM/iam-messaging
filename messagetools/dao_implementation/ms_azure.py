@@ -112,7 +112,7 @@ class Live(object):
             print 'receive_subscription_message: call'
             ms_msg = bus_service.receive_subscription_message(self._topic, self._subscr, peek_lock=True, timeout='3')
             print 'receive_subscription_message: return'
-            if ms_msg is None:
+            if ms_msg is None or ms_msg.body is None:
                 print 'no more messages'
                 return nm
             nm += 1

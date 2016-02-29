@@ -7,8 +7,8 @@ from messagetools.dao_implementation.aws import File as AWSFile
 from messagetools.dao_implementation.aws import Live as AWSLive
 
 # remove azure until fixed
-# from messagetools.dao_implementation.ms_azure import File as AzureFile
-# from messagetools.dao_implementation.ms_azure import Live as AzureLive
+from messagetools.dao_implementation.ms_azure import File as AzureFile
+from messagetools.dao_implementation.ms_azure import Live as AzureLive
 
 class DAO_BASE(object):
              
@@ -23,6 +23,11 @@ class DAO_BASE(object):
     def _get_queue(self):
         dao = self._getDAO()
         response = dao.get_queue()
+        return response
+
+    def _get_all_topics(self):
+        dao = self._getDAO()
+        response = dao.get_all_topics()
         return response
 
     def _get_all_queues(self):
@@ -43,6 +48,11 @@ class DAO_BASE(object):
     def _create_queue(self, name):
         dao = self._getDAO()
         response = dao.create_queue(name)
+        return response
+
+    def _get_all_subscriptions_by_topic(self, topic):
+        dao = self._getDAO()
+        response = dao.get_all_subscriptions_by_topic(topic)
         return response
 
     def _create_subscription(self, topic_name, name):
@@ -81,6 +91,9 @@ class AWS_DAO(DAO_BASE):
     def get_all_queues(self):
         return self._get_all_queues()
 
+    def get_all_topics(self):
+        return self._get_all_topics()
+
     def create_queue(self, name):
         return self._create_queue(name)
 
@@ -92,6 +105,9 @@ class AWS_DAO(DAO_BASE):
 
     def subscribe_queue(self, topic_name, queue_name):
         return self._subscribe_queue(topic_name, queue_name)
+
+    def get_all_subscriptions_by_topic(self, topic):
+        return self._get_all_subscriptions_by_topic(topic)
 
     def _getDAO(self):
         if self._run_mode=='Live':
@@ -135,10 +151,10 @@ class Azure_DAO(DAO_BASE):
         response = dao.remove_rule(topic_name, subscription_name, rule_name)
         return response
 
-#    def _getDAO(self):
-#        if self._run_mode=='Live':
-#            return AzureLive(self._conf)
-#        return AzureFile(self._conf)
+    def _getDAO(self):
+        if self._run_mode=='Live':
+            return AzureLive(self._conf)
+        return AzureFile(self._conf)
 
 
 

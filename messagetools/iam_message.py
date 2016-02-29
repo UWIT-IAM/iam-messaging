@@ -21,7 +21,6 @@
 # 
 
 # crypto class covers for openssl
-import M2Crypto
 from M2Crypto import BIO, RSA, EVP, X509
 
 import json
@@ -276,4 +275,4 @@ def crypt_init(cfg):
     # skip ssl warning for older pythons
     if sys.hexversion < 0x02070900:
         logger.info('Ignoring urllib3 ssl security warning: https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning')
-        urllib3.disable_warnings()
+        # urllib3.disable_warnings()
