@@ -173,14 +173,9 @@ def decode_message(b64msg):
                   pem = f.read()
 
           elif certurl.startswith('http'):
-              if _ca_file != None:
-                  http = urllib3.PoolManager(
-                      cert_reqs='CERT_REQUIRED', # Force certificate check.
-                      ca_certs=_ca_file,  
-                  )
-              else:
-                  http = urllib3.PoolManager()
-              certdoc = http.request('GET', certurl)
+              # not looking at ca file till we know how
+              conn = urllib3.connection_from_url(certurl, ssl_version=ssl.PROTOCOL_TLSv1)
+              certdoc = conn.request('GET', certurl)
               if certdoc.status != 200:
                   logger.error('sws cert get failed: ' + certdoc.status)
                   raise SigningCertException(url=certurl, status=certdoc.status)
