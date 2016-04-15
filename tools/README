@@ -1,0 +1,4 @@
+to run these first:
+
+. ../msg-env/bin/activate
+export PYTHONPATH=..
