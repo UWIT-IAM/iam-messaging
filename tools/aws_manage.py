@@ -36,6 +36,7 @@ parser.add_option('-t', '--topic', action='store', type='string', dest='topic', 
 parser.add_option('-q', '--queue', action='store', type='string', dest='queue', help='queue')
 parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='?')
 parser.add_option('-c', '--conf', action='store', type='string', dest='config', help='config file')
+parser.add_option('-a', '--account', action='store', type='string', dest='account', help='AWS account')
 options, args = parser.parse_args()
 
 if options.operation==None:
@@ -99,5 +100,10 @@ if options.operation=='cq':
 if options.operation=='sq':
     print 'subscribing queue: ' + options.queue + ' to topic ' + options.topic
     aws.subscribe_queue(options.topic, options.queue)
+
+if options.operation=='ps':
+    print 'permit subscribe: ' + options.account + ' to topic ' + options.topic
+    label = 'permit sub from ' + options.account
+    aws.add_permission(options.topic, label, options.account, 'Subscribe')
 
 

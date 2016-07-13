@@ -75,6 +75,12 @@ class DAO_BASE(object):
         response = dao.subscribe_queue(topic_name, queue_name)
         return response
 
+    def _add_permission(self, topic_name, label, account, permission):
+        dao = self._getDAO()
+        response = dao.add_permission(topic_name, label, account, permission)
+        return response
+
+
 
 
 class AWS_DAO(DAO_BASE):
@@ -108,6 +114,9 @@ class AWS_DAO(DAO_BASE):
 
     def get_all_subscriptions_by_topic(self, topic):
         return self._get_all_subscriptions_by_topic(topic)
+
+    def add_permission(self, topic_name, label, account, permission):
+        return self._add_permission(topic_name, label, account, permission)
 
     def _getDAO(self):
         if self._run_mode=='Live':

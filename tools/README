@@ -1,4 +1,6 @@
-to run these first:
+to run these:
 
-. ../msg-env/bin/activate
+activate the python virtual env
 export PYTHONPATH=..
+
+

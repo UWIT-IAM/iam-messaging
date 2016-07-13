@@ -1,0 +1,48 @@
+
+DEBUG = False
+
+# RUN_MODE = 'File'
+RUN_MODE = 'Live'
+#
+
+RESTTOOLS_CA_BUNDLE = '(path-to)uw-incommon-ca.crt'
+
+execfile('(path-to)aws_settings.py')
+execfile('(path-to)azure_settings.py')
+execfile('(path-to)iam_settings.py')
+
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'plain': {
+            'format': '%(message)s'
+        },
+        'syslog': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'default': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+            'stream': 'ext://sys.stdout',
+            'formatter': 'plain',
+        },
+        'syslog': {
+            'class': 'logging.handlers.SysLogHandler',
+            'level': 'DEBUG',
+            'formatter': 'syslog',
+            'facility': 'LOG_LOCAL7'
+        }
+    },
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['default'],
+        
+    },
+    'suds': {
+        'level': 'INFO',
+        'handlers': ['default']
+    },
+}

@@ -90,4 +90,9 @@ class AWS(object):
         response = dao.subscribe_queue(topic_name, queue_name)
         return response
 
+    def add_permission(self, topic_name, label, account, permission):
+        dao = AWS_DAO(self._conf)
+        response = dao.add_permission(topic_name, label, account, permission)
+        return response
+
 
