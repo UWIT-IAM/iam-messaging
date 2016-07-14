@@ -1,0 +1,6 @@
+to run these:
+
+activate the python virtual env
+export PYTHONPATH=..
+
+

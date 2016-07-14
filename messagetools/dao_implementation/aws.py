@@ -87,6 +87,11 @@ class Live(object):
         sns_connection.publish(self._conf['SNS_ARN'], b64msg, 'iam-message')
 
 
+    def get_all_topics(self):
+        sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        topics = sns_connection.get_all_topics()
+        return topics
+       
     def get_all_queues(self):
         sqs_connection = boto.connect_sqs(aws_access_key_id=self._conf['SQS_KEYID'], aws_secret_access_key=self._conf['SQS_KEY'])
         queues = sqs_connection.get_all_queues()
@@ -165,6 +170,16 @@ class Live(object):
         sns_connection.subscribe_sqs_queue(arn, queue)
 
 
+    def get_all_subscriptions_by_topic(self, topic):
+        sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queues = sns_connection.get_all_subscriptions_by_topic(topic)
+        return queues
+       
+    def add_permission(self, topic_name, label, account, permission):
+        sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        ret = sns_connection.add_permission(topic_name, label, account, permission)
+        return ret
+       
 
     
 

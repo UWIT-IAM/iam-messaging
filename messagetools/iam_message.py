@@ -21,7 +21,6 @@
 # 
 
 # crypto class covers for openssl
-import M2Crypto
 from M2Crypto import BIO, RSA, EVP, X509
 
 import json
@@ -174,8 +173,15 @@ def decode_message(b64msg):
                   pem = f.read()
 
           elif certurl.startswith('http'):
-              http = urllib3.PoolManager()
+              if _ca_file != None:
+                  http = urllib3.PoolManager(
+                      cert_reqs='CERT_REQUIRED', # Force certificate check.
+                      ca_certs=_ca_file,
+                  )
+              else:
+                  http = urllib3.PoolManager()
               certdoc = http.request('GET', certurl)
+
               if certdoc.status != 200:
                   logger.error('sws cert get failed: ' + certdoc.status)
                   raise SigningCertException(url=certurl, status=certdoc.status)
@@ -270,4 +276,4 @@ def crypt_init(cfg):
     # skip ssl warning for older pythons
     if sys.hexversion < 0x02070900:
         logger.info('Ignoring urllib3 ssl security warning: https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning')
-        urllib3.disable_warnings()
+        # urllib3.disable_warnings()

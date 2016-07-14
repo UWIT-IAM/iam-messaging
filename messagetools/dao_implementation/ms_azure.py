@@ -23,9 +23,11 @@ import re
 import json
 
 
-# Azure interface classes 
-from azure.servicebus import ServiceBusService, Message, Topic, Rule, DEFAULT_RULE_NAME
-
+# Azure interface classes - optional
+import pip
+packs = [package.project_name for package in pip.get_installed_distributions()]
+if 'azure-servicebus' in packs:
+    from azure.servicebus import ServiceBusService, Message, Topic, Rule, DEFAULT_RULE_NAME
 
 from copy import deepcopy
 
@@ -72,6 +74,10 @@ class Live(object):
         self._conf = conf
         self._topic = conf['TOPIC_NAME']
         self._subscr = conf['SUBSCRIPTION_NAME']
+        self._bus_service = ServiceBusService(service_namespace=self._conf['NAMESPACE'],
+                                 shared_access_key_name=self._conf['ACCESS_KEY_NAME'],
+                                 shared_access_key_value=self._conf['ACCESS_KEY_VALUE'])
+
 
     def _get_bus_service(self):
         return ServiceBusService(service_namespace=self._conf['NAMESPACE'],
@@ -79,10 +85,10 @@ class Live(object):
                                  shared_access_key_value=self._conf['ACCESS_KEY_VALUE'])
 
     def send_message(self, msg, context, cryptid, signid, properties={}):
-        bus_service = self._get_bus_service()
+        # bus_service = self._get_bus_service()
         b64msg = encode_message(msg, context, cryptid, signid)
         ms_msg = Message(b64msg, custom_properties=properties)
-        ret = bus_service.send_topic_message(self._conf['TOPIC_NAME'], ms_msg)
+        ret = self._bus_service.send_topic_message(self._conf['TOPIC_NAME'], ms_msg)
         return ret
 
     def create_topic(self, topic_name):
@@ -112,7 +118,7 @@ class Live(object):
             print 'receive_subscription_message: call'
             ms_msg = bus_service.receive_subscription_message(self._topic, self._subscr, peek_lock=True, timeout='3')
             print 'receive_subscription_message: return'
-            if ms_msg is None:
+            if ms_msg is None or ms_msg.body is None:
                 print 'no more messages'
                 return nm
             nm += 1

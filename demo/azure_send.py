@@ -22,6 +22,9 @@ from messagetools.ms_azure import Azure
 
 import settings
 
+import urllib3
+urllib3.disable_warnings()
+
 #
 # ---------------- gws_ce main --------------------------
 #
@@ -53,7 +56,8 @@ if options.nocrypt:
 azure = Azure(settings.AZURE_CONF)
 # azure = Azure(settings.AZURE_CONF_2)
 
-resp = azure.send_message(msg, 'Message with group u_spud.', cryptkey, 'iamsig1', properties={'Group-Stem':'u_spud'})
-print resp
+for n in range(10):
+  resp = azure.send_message(msg + ' - ' + str(n), 'Message with group u_spud.', cryptkey, 'iamsig1', properties={'Group-Stem':'u_spud'})
+  print resp
 
 
