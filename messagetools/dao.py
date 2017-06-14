@@ -50,6 +50,16 @@ class DAO_BASE(object):
         response = dao.create_queue(name)
         return response
 
+    def _purge_queue(self, name):
+        dao = self._getDAO()
+        response = dao.purge_queue(name)
+        return response
+
+    def _delete_queue(self, name):
+        dao = self._getDAO()
+        response = dao.delete_queue(name)
+        return response
+
     def _get_all_subscriptions_by_topic(self, topic):
         dao = self._getDAO()
         response = dao.get_all_subscriptions_by_topic(topic)
@@ -102,6 +112,12 @@ class AWS_DAO(DAO_BASE):
 
     def create_queue(self, name):
         return self._create_queue(name)
+
+    def purge_queue(self, name):
+        return self._purge_queue(name)
+
+    def delete_queue(self, name):
+        return self._delete_queue(name)
 
     def recv_message(self):
         return self._recv_message()

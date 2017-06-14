@@ -107,8 +107,8 @@ class Live(object):
         queue.set_message_class(RawMessage)
         logger.debug('%r messages in the queue' % (queue.count()))
         return queue
-            
-        
+      
+     
     def create_topic(self, topic_name):
         sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
         if sns_connection==None:
@@ -130,7 +130,26 @@ class Live(object):
         if ret==None:
             logger.error('AWS queue create failed for %s' % queue_name)
         return ret
+       
+    def purge_queue(self, queue_name):
+        sqs_connection = boto.connect_sqs(aws_access_key_id=self._conf['SQS_KEYID'], aws_secret_access_key=self._conf['SQS_KEY'])
+        queue = sqs_connection.get_queue(queue_name)
+        if queue==None:
+            logger.critical("Could not connect to '%s'!" % (queue_name))
+            return queue
+        ret = sqs_connection.purge_queue(queue);
+        logger.debug('purge status = {}'.format(ret))
+        return ret
 
+    def delete_queue(self, queue_name):
+        sqs_connection = boto.connect_sqs(aws_access_key_id=self._conf['SQS_KEYID'], aws_secret_access_key=self._conf['SQS_KEY'])
+        queue = sqs_connection.get_queue(queue_name)
+        if queue==None:
+            logger.critical("Could not connect to '%s'!" % (queue_name))
+            return queue
+        ret = sqs_connection.delete_queue(queue);
+        logger.debug('delete status = {}'.format(ret))
+        return ret
 
     def recv_message(self):
         sqs_queue = self.get_queue()
