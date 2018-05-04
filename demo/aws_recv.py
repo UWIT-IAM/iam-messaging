@@ -106,7 +106,7 @@ nmsg = 0
 while still_alive:
 
    message = aws.recv_message()
-   print message
+   print (message)
    if message==None: 
       sleep_sec = 1800
       if idle5>0:
@@ -122,18 +122,18 @@ while still_alive:
     
    idle1 = idle5 = 0     
    hdr = message[u'header']
-   print 'message received: type: ' + hdr[u'messageType']
-   print 'uuid: ' + hdr[u'messageId']
-   print 'sent: ' + hdr[u'timestamp']
-   print 'sender: ' + hdr[u'sender']
-   print 'contentType: ' + hdr[u'contentType']
-   print 'context: [%s]' % hdr[u'messageContext']
-   print 'message: [%s]' % message[u'body']
+   print ('message received: type: ' + hdr[u'messageType'])
+   print ('uuid: ' + hdr[u'messageId'])
+   print ('sent: ' + hdr[u'timestamp'])
+   print ('sender: ' + hdr[u'sender'])
+   print ('contentType: ' + hdr[u'contentType'])
+   print ('context: [%s]' % hdr[u'messageContext'])
+   print ('message: [%s]' % message[u'body'])
 
    nmsg += 1
    if nmsg==max_messages:
       break
 
 logger.info('Exiting')
-print '%d messages processed' %(nmsg)
+print ('%d messages processed' %(nmsg))
 

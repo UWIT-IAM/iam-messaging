@@ -24,8 +24,8 @@ import json
 
 
 # Azure interface classes - optional
-import pip
-packs = [package.project_name for package in pip.get_installed_distributions()]
+import pkg_resources
+packs = [package.project_name for package in pkg_resources.working_set]
 if 'azure-servicebus' in packs:
     from azure.servicebus import ServiceBusService, Message, Topic, Rule, DEFAULT_RULE_NAME
 
@@ -98,7 +98,7 @@ class Live(object):
     def create_subscription(self, topic_name, name):
         bus_service = self._get_bus_service()
         ret = bus_service.create_subscription(topic_name, name)
-        print ret
+        print (ret)
 
     def recv_message(self, peek=False):
         subscription_name=self._conf['SUBSCRIPTION_NAME']
@@ -115,23 +115,23 @@ class Live(object):
         bus_service = self._get_bus_service()
         nm = 0
         for m in range(0,max):
-            print 'receive_subscription_message: call'
+            print ('receive_subscription_message: call')
             ms_msg = bus_service.receive_subscription_message(self._topic, self._subscr, peek_lock=True, timeout='3')
-            print 'receive_subscription_message: return'
+            print ('receive_subscription_message: return')
             if ms_msg is None or ms_msg.body is None:
-                print 'no more messages'
+                print ('no more messages')
                 return nm
             nm += 1
             dmsg = decode_message(ms_msg.body)
             if dmsg is None:
-                print 'removing invalid message'
+                print ('removing invalid message')
                 ms_msg.delete()
                 continue
             ret = handler(decode_message(ms_msg.body))
             if ret:
-                print 'deleting'
+                print ('deleting')
                 ms_msg.delete()
-                print 'deleted'
+                print ('deleted')
             else:
                 ms_msg.unlock()
         return nm
@@ -142,12 +142,12 @@ class Live(object):
         rule.filter_type = 'SqlFilter'
         rule.filter_expression = rule_value
         ret = bus_service.create_rule(topic_name, subscription_name, rule_name, rule)
-        print ret
+        print (ret)
 
     def remove_rule(self, topic_name, subscription_name, rule_name):
         if rule_name == '-default-':
             rule_name = DEFAULT_RULE_NAME
         bus_service = self._get_bus_service()
         ret = bus_service.delete_rule(topic_name, subscription_name, rule_name)
-        print ret
+        print (ret)
 

@@ -39,7 +39,7 @@ parser.add_option('-c', '--conf', action='store', type='string', dest='config', 
 parser.add_option('-n', '--nocrypt', action='store_true', dest='nocrypt', default='false', help='dont encrypt message')
 options, args = parser.parse_args()
 
-print logging
+print(logging)
 
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger()

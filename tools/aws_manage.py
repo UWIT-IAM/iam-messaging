@@ -39,17 +39,17 @@ parser.add_option('-a', '--account', action='store', type='string', dest='accoun
 options, args = parser.parse_args()
 
 if options.operation==None:
-    print 'operation must be entered'
+    print('operation must be entered')
     exit(1)
 
 def _need_ext(name, typ):
     if name.find('arn:') >= 0:
-       print '%s needs the %s extension name' % (options.operation, typ)
+       print('%s needs the %s extension name' % (options.operation, typ))
        exit(1)
 
 def _need_full(name, typ):
     if name.find('arn:') < 0:
-       print '%s needs the %s full name' % (options.operation, typ)
+       print('%s needs the %s full name' % (options.operation, typ))
        exit(1)
 
 crypt_init(settings.IAM_CONF)
@@ -59,73 +59,73 @@ logging.info("sws queue monitor starting.")
 aws = AWS(settings.AWS_CONF)
 
 if options.operation=='lt':
-    print 'list topics '
+    print('list topics ')
     topics = aws.get_all_topics()
-    # print topics
+    # print (topics)
     for topic in topics['ListTopicsResponse']['ListTopicsResult']['Topics']:
-        print topic['TopicArn']
+        print(topic['TopicArn'])
         if options.verbose:
-            print topic.get_attributes
+            print(topic.get_attributes)
 
 if options.operation=='lq':
-    print 'list queues '
+    print('list queues ')
     queues = aws.get_all_queues()
     for q in queues:
-        print q.arn
+        print(q.arn)
         if options.verbose:
-            print q.get_attributes
+            print(q.get_attributes)
 
 if options.operation=='lqt':
     if options.topic is None:
-        print 'you must specify a topic'
+        print('you must specify a topic')
         exit
-    print 'list queues for topic: ' + options.topic
+    print('list queues for topic: ' + options.topic)
     _need_full(options.topic, 'topic')
     queues = aws.get_all_subscriptions_by_topic(options.topic)
-    # print queues
+    # print(queues)
     for queue in queues['ListSubscriptionsByTopicResponse']['ListSubscriptionsByTopicResult']['Subscriptions']:
-        print queue['Endpoint']
+        print(queue['Endpoint'])
 
 if options.operation=='ltq':
     if options.queue is None:
-        print 'you must specify a queue'
+        print('you must specify a queue')
         exit
-    print 'list topics for queue '
+    print('list topics for queue ')
     _need_full(options.queue, 'queue')
     topics = aws.get_all_topics()
     for topic in topics['ListTopicsResponse']['ListTopicsResult']['Topics']:
-        # print topic['TopicArn']
+        # print(topic['TopicArn'])
         queues = aws.get_all_subscriptions_by_topic(topic['TopicArn'])
         for queue in queues['ListSubscriptionsByTopicResponse']['ListSubscriptionsByTopicResult']['Subscriptions']:
             if queue['Endpoint'] == options.queue:
-                print topic['TopicArn']
+                print(topic['TopicArn'])
 
 if options.operation=='ct':
-    print 'creating topic: ' + options.topic
+    print('creating topic: ' + options.topic)
     _need_ext(options.topic, 'topic')
     aws.create_topic(options.topic)
 
 if options.operation=='cq':
-    print 'creating queue: ' + options.queue
+    print('creating queue: ' + options.queue)
     _need_ext(options.queue, 'queue')
     aws.create_queue(options.queue)
 
 if options.operation=='pq':
-    print 'purging queue: ' + options.queue
+    print('purging queue: ' + options.queue)
     _need_ext(options.queue, 'queue')
     aws.purge_queue(options.queue)
 
 if options.operation=='dq':
-    print 'deleting queue: ' + options.queue
+    print('deleting queue: ' + options.queue)
     _need_ext(options.queue, 'queue')
     aws.delete_queue(options.queue)
 
 if options.operation=='sq':
-    print 'subscribing queue: ' + options.queue + ' to topic ' + options.topic
+    print('subscribing queue: ' + options.queue + ' to topic ' + options.topic)
     aws.subscribe_queue(options.topic, options.queue)
 
 if options.operation=='ps':
-    print 'permit subscribe: ' + options.account + ' to topic ' + options.topic
+    print('permit subscribe: ' + options.account + ' to topic ' + options.topic)
     label = 'permit sub from ' + options.account
     aws.add_permission(options.topic, label, options.account, 'Subscribe')
 

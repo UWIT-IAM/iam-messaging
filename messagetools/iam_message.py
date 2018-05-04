@@ -40,9 +40,9 @@ import urllib3
 
 import threading
 
-from exceptions import SignatureVerifyException
-from exceptions import CryptKeyException
-from exceptions import SigningCertException
+from messagetools.exceptions import SignatureVerifyException
+from messagetools.exceptions import CryptKeyException
+from messagetools.exceptions import SigningCertException
 
 # ----- global vars (to this module) ------------------
 
@@ -61,6 +61,7 @@ _ca_file = None
 import logging
 logger = None
 
+nl=u'\n'
 #
 # -------------------------------------
 #
@@ -69,14 +70,15 @@ logger = None
 # accumulate header fields for signature
 #
 def _build_sig_msg(header, txt):
-    sigmsg = header[u'contentType'] + '\n'
+    sigmsg = header['contentType'] + nl
     if 'keyId' in header:
-        sigmsg = sigmsg + header[u'iv'] + '\n' + header[u'keyId'] + '\n'
-    sigmsg = sigmsg + header[u'messageContext'] + '\n' + header[u'messageId'] + '\n' + \
-         header[u'messageType'] + '\n' + header[u'sender'] + '\n' + \
-         header[u'signingCertUrl'] + '\n' + header[u'timestamp'] + '\n' + header[u'version'] + '\n' + \
-         txt + '\n'
-    return sigmsg.encode('ascii')
+        sigmsg = sigmsg + header['iv'] + nl + header['keyId'] + nl
+    sigmsg = sigmsg + header['messageContext'] + nl + header['messageId'] + nl + \
+         header['messageType'] + nl + header['sender'] + nl + \
+         header['signingCertUrl'] + nl + header['timestamp'] + nl + header['version'] + nl + \
+         txt + nl
+    # print (sigmsg)
+    return sigmsg
 
 #
 #  create a signed (and encrypted) iam message
@@ -86,14 +88,16 @@ def _build_sig_msg(header, txt):
 
 def encode_message(msg, context, cryptid, signid):
     
+    # print('in msg: ' + msg)
+
     iamHeader = {}
-    iamHeader['contentType'] = 'json'
-    iamHeader['version'] = 'UWIT-1'
-    iamHeader['messageType'] = 'iam-test'
+    iamHeader['contentType'] = u'json'
+    iamHeader['version'] = u'UWIT-1'
+    iamHeader['messageType'] = u'iam-test'
     u = uuid.uuid4()
     iamHeader['messageId'] = str(u)
-    iamHeader['messageContext'] = base64.b64encode(context)
-    iamHeader['sender'] = 'iam-msg'
+    iamHeader['messageContext'] = base64.b64encode(context.encode()).decode()
+    iamHeader['sender'] = u'iam-msg'
 
     iamHeader['timestamp'] = datetime.datetime.utcnow().isoformat()
     if signid not in _private_keys:
@@ -105,12 +109,12 @@ def encode_message(msg, context, cryptid, signid):
             raise CryptKeyException(keyid=cryptid, msg='not found')
         iamHeader['keyId'] = cryptid
         iv = os.urandom(16)
-        iamHeader['iv'] = base64.b64encode(iv)
-        cipher = M2Crypto.EVP.Cipher(alg='aes_128_cbc', key=_crypt_keys[cryptid], iv=iv, op=1)
-        txt = cipher.update(msg) + cipher.final()
-        enctxt64 = base64.b64encode(txt)
+        iamHeader['iv'] = base64.b64encode(iv).decode()
+        cipher = EVP.Cipher(alg='aes_128_cbc', key=_crypt_keys[cryptid], iv=iv, op=1)
+        txt = cipher.update(msg.encode()) + cipher.final()
+        enctxt64 = base64.b64encode(txt).decode()
     else:
-        enctxt64 = base64.b64encode(msg)
+        enctxt64 = base64.b64encode(msg.encode()).decode()
     
     # gen the signature
     sigmsg = _build_sig_msg(iamHeader, enctxt64)
@@ -118,10 +122,10 @@ def encode_message(msg, context, cryptid, signid):
     key = _private_keys[signid]['key']
     key.reset_context(md='sha1')
     key.sign_init()
-    key.sign_update(sigmsg)
+    key.sign_update(sigmsg.encode())
     sig = key.sign_final()
     sig64 = base64.b64encode(sig)
-    iamHeader['signature'] = sig64
+    iamHeader['signature'] = sig64.decode()
 
     body = {}
     body['Message'] = enctxt64
@@ -130,8 +134,9 @@ def encode_message(msg, context, cryptid, signid):
     iamMessage['header'] = iamHeader
     iamMessage['body'] = enctxt64
 
-    m64 = base64.b64encode(json.dumps(iamMessage))
-    return m64
+    m64 = base64.b64encode(json.dumps(iamMessage).encode())
+    # print('in b64: ' + enctxt64)
+    return m64.decode()
     
 #
 #  receive a signed (and encrypted) iam message
@@ -144,26 +149,26 @@ def decode_message(b64msg):
 
     # get the iam message
     try:
-        msgstr = base64.b64decode(b64msg).encode('utf8','ignore')
+        msgstr = base64.b64decode(b64msg).decode()
     except TypeError:
         logger.info( 'Not an IAM message: not base64')
         return None
     iam_message = json.loads(msgstr)
 
 
-    if 'header' not in iam_message: 
+    if u'header' not in iam_message: 
         logger.info('not an iam message')
         return None
     iamHeader = iam_message['header']
 
     try:
       # check the version
-      if iamHeader[u'version'] != 'UWIT-1':
-          logger.error('unknown version: ' + iamHeader[u'version'])
+      if iamHeader['version'] != u'UWIT-1':
+          logger.error('unknown version: ' + iamHeader['version'])
           return None
 
       # the signing cert should be cached most of the time
-      certurl = iamHeader[u'signingCertUrl']
+      certurl = iamHeader['signingCertUrl']
       if not certurl in _public_keys:
           logger.info('Fetching signing cert: ' + certurl)
           pem = ''
@@ -174,12 +179,14 @@ def decode_message(b64msg):
 
           elif certurl.startswith('http'):
               if _ca_file != None:
+                  # print ('using ca file: ' + _ca_file)
                   http = urllib3.PoolManager(
                       cert_reqs='CERT_REQUIRED', # Force certificate check.
                       ca_certs=_ca_file,
                   )
               else:
                   http = urllib3.PoolManager()
+              # print ('certurl = ' + certurl)
               certdoc = http.request('GET', certurl)
 
               if certdoc.status != 200:
@@ -194,42 +201,50 @@ def decode_message(b64msg):
           key = x509.get_pubkey()
           _public_keys[certurl] = key
 
-      enctxt64 = iam_message[u'body']
+
+      enctxt64 = iam_message['body']
+      
+      # print ('out body: ' + enctxt64)
 
       # check the signature
-
       sigmsg = _build_sig_msg(iamHeader, enctxt64)
-      sig = base64.b64decode(iamHeader[u'signature'])
+
+      sig = base64.b64decode(iamHeader['signature'])
       pubkey = _public_keys[certurl]
       pubkey.reset_context(md='sha1')
       pubkey.verify_init()
-      pubkey.verify_update(sigmsg)
+      pubkey.verify_update(sigmsg.encode())
       if pubkey.verify_final(sig)!=1:
           raise SignatureVerifyException()
 
+      # print ('signature ok')
       # decrypt the message
       if 'keyId' in iamHeader:
-          iv64 = iamHeader[u'iv']
+          iv64 = iamHeader['iv']
           iv = base64.b64decode(iv64)
-          keyid = iamHeader[u'keyId']
+          keyid = iamHeader['keyId']
           if not keyid in _crypt_keys:
               logger.error('key ' + keyid + ' not found')
               raise CryptKeyException(keyid=keyid, msg='not found')
           key = _crypt_keys[keyid]
  
           enctxt =  base64.b64decode(enctxt64)
-          cipher = M2Crypto.EVP.Cipher(alg='aes_128_cbc', key=key, iv=iv, op=0)
+          cipher = EVP.Cipher(alg='aes_128_cbc', key=key, iv=iv, op=0)
           txt = cipher.update(enctxt) + cipher.final()
       else:
           txt = base64.b64decode(enctxt64)
+      txt = txt.decode()
+      # print('out txt: ' + txt)
 
-      txt = filter(lambda x: x in string.printable, txt)
-      iam_message[u'body'] = txt
+      ## txt = filter(lambda x: x in string.printable, txt)
+      iam_message['body'] = txt
       # un-base64 the context
       try:
-          iamHeader[u'messageContext'] = base64.b64decode(iamHeader[u'messageContext'])
+          iamHeader['messageContext'] = base64.b64decode(iamHeader['messageContext'].encode()).decode()
+          # print (iamHeader['messageContext'])
       except TypeError:
           logger.info( 'context not base64')
+          # print( 'context not base64')
           return None
     except KeyError:
         if 'AlarmName' in iam_message:
@@ -248,6 +263,7 @@ def crypt_init(cfg):
     global _ca_file
     global logger
 
+    # print (cfg)
     logger = logging.getLogger(__name__)
 
     # load the signing keys
@@ -272,6 +288,7 @@ def crypt_init(cfg):
     # are we verifying certs ( just for the signing cert )
     if 'CA_FILE' in cfg:
         _ca_file = cfg['CA_FILE']
+        # print ('adding ca file: ' + _ca_file)
         
     # skip ssl warning for older pythons
     if sys.hexversion < 0x02070900:

@@ -25,7 +25,7 @@ from copy import deepcopy
 import logging
 import json
 
-from dao import AWS_DAO
+from messagetools.dao import AWS_DAO
 
 class AWS(object):
 

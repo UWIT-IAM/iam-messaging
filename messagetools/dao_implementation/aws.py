@@ -156,7 +156,8 @@ class Live(object):
         sqs_msg = sqs_queue.read()
         if sqs_msg == None:
             return None
-        sqsmsg = json.loads(sqs_msg.get_body().encode('utf8','ignore'))
+        sqsmsg = json.loads(sqs_msg.get_body())
+        # sqsmsg = json.loads(sqs_msg.get_body().encode('utf8','ignore'))
         msg = decode_message(sqsmsg['Message'])
         logger.debug('live recv: [%s]' % json.dumps(msg))
         if msg != None:
