@@ -192,7 +192,6 @@ def decode_message(b64msg):
               if certdoc.status != 200:
                   logger.error('sws cert get failed: ' + certdoc.status)
                   raise SigningCertException(url=certurl, status=certdoc.status)
-              logger.debug('got it')
               pem = certdoc.data
           else:
               raise SigningCertException(url=certurl, status=-1)
