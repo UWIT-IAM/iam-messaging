@@ -33,6 +33,7 @@ last_event_received = start_time
 last_event_time = 0
 num_events = 0
 
+verbose=False
 
 # -------------------------------------
 #
@@ -72,6 +73,7 @@ parser.add_option('-c', '--conf', action='store', type='string', dest='config', 
 parser.add_option('-m', '--max_messages', action='store', type='int', dest='maxmsg', help='maximum messages to process')
 parser.add_option('', '--count', action='store_true', dest='count_only', help='just count the messages onthe queue', default=False)
 parser.add_option('-q', '--queue', action='store', type='string', dest='queue', help='queue name')
+parser.add_option('-l', '--log', action='store', type='string', dest='log', help='log name')
 options, args = parser.parse_args()
 
 max_messages = 10
@@ -103,6 +105,13 @@ idle5 = 0  # 5 minute counter
 
 if options.queue is not None:
    settings.AWS_CONF['SQS_QUEUE'] = options.queue
+if options.verbose:
+   verbose = True
+
+logfile = None
+if options.log is not None:
+    logfile = open(options.log, 'a')
+
 
 print('Listening on SQS queue ' + settings.AWS_CONF['SQS_QUEUE'])
 aws = AWS(settings.AWS_CONF)
@@ -126,17 +135,26 @@ while still_alive:
       continue
     
    idle1 = idle5 = 0     
-   # print(message[u'header'])
    hdr = message[u'header']
    print ('message received: ' + hdr[u'timestamp'])
+   if verbose:
+       print(message[u'header'])
    # print ('uuid: ' + hdr[u'messageId'])
    if hdr[u'sender'] != 'gws':
        print ('sender: ' + hdr[u'sender'])
-   # print ('contentType: ' + hdr[u'contentType'])
+   if verbose:
+       print ('contentType: ' + hdr[u'contentType'])
    context = json.loads(hdr[u'messageContext'])
    if 'group' in context:
        print ('group: [%s]\n' % context['group'])
-   # print ('message: [%s]' % message[u'body'])
+   if 'targets' in context:
+       for tgt in context['targets']:
+           print ('target: ' + tgt['target'])
+   if verbose:
+       print ('message: [%s]' % message[u'body'])
+
+   if logfile is not None:
+       logfile.write('%s %s\n' % (hdr[u'timestamp'], message[u'body']))
 
    nmsg += 1
    if nmsg==max_messages:

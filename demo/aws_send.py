@@ -47,7 +47,7 @@ logger.info("aws event sender starting.")
 
 crypt_init(settings.IAM_CONF)
 
-msg = 'Hello, world, from py.'
+msg = 'Hello, world, from py..'
 if options.message!=None:
    msg = options.message
 
