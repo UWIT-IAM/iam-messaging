@@ -155,6 +155,7 @@ def decode_message(b64msg):
         return None
     iam_message = json.loads(msgstr)
 
+
     if u'header' not in iam_message: 
         logger.info('not an iam message')
         return None
