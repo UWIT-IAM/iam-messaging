@@ -17,25 +17,16 @@
 
 #
 # IAM messaging tools - DAO impl - AWS interface
+# boto3 edition
 #
 
 import re
 
 
-# AWS interface classes 
-from boto.sqs.message import RawMessage
-import boto
+import boto3
 import json
 
-# import datetime
-# import dateutil.parser
-# import base64
-# import string
-# import time
-# import re
-# import os.path
 from sys import exit
-# import signal
 from copy import deepcopy
 
 from messagetools.iam_message import encode_message
@@ -82,39 +73,41 @@ class Live(object):
         self._conf = conf
 
     def send_message(self, msg, context, cryptid, signid):
-        sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        sns_client = boto3.client('sns', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
         b64msg = encode_message(msg, context, cryptid, signid)
-        sns_connection.publish(self._conf['SNS_ARN'], b64msg, 'iam-message')
-
+        sns_client.publish(TopicArn=self._conf['SNS_ARN'], Message=b64msg, Subject='iam-message', MessageStructure='string')
+        # plus message attrs
 
     def get_all_topics(self):
-        sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
-        topics = sns_connection.get_all_topics()
+        sns_client = boto3.client('sns', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        topics = sns_client.list_topics()
         return topics
        
     def get_all_queues(self):
-        sqs_connection = boto.connect_sqs(aws_access_key_id=self._conf['SQS_KEYID'], aws_secret_access_key=self._conf['SQS_KEY'])
-        queues = sqs_connection.get_all_queues()
+        sqs_client = boto3.client('sqs', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queues = sqs_client.list_queues()
         return queues
        
-    def get_queue(self):
+    def get_queue(self, queue_name):
     
-        sqs_connection = boto.connect_sqs(aws_access_key_id=self._conf['SQS_KEYID'], aws_secret_access_key=self._conf['SQS_KEY'])
-        queue = sqs_connection.get_queue(self._conf['SQS_QUEUE'])
-        if queue==None:
-            logger.critical("Could not connect to '%s'!" % (self._conf['SQS_QUEUE']))
-            return queue
-        queue.set_message_class(RawMessage)
-        logger.debug('%r messages in the queue' % (queue.count()))
+        sqs_client = boto3.client('sqs', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queue_url = sqs_client.get_queue_url(QueueName=queue_name)
+        if queue_url==None:
+            logger.critical("Could not connect to '%s'!" % (queue_name))
+            return None
+        sqs = boto3.resource('sqs', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queue = sqs.Queue(queue_url)
+        # queue.set_message_class(RawMessage)
+        # logger.debug('%r messages in the queue' % (queue.count()))
         return queue
       
      
     def create_topic(self, topic_name):
-        sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
-        if sns_connection==None:
+        sns_client = boto3.client('sns', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        if sns_client==None:
             loger.error('AWS sns connect failed')
             return none
-        ret = sns_connection.create_topic(topic_name)
+        ret = sns_client.create_topic(Name='topic_name')
         if ret==None:
             log.error('AWS topic create failed for %s' % topic_name)
             return none
@@ -122,38 +115,39 @@ class Live(object):
 
 
     def create_queue(self, queue_name):
-        sqs_connection = boto.connect_sqs(aws_access_key_id=self._conf['SQS_KEYID'], aws_secret_access_key=self._conf['SQS_KEY'])
-        if sqs_connection==None:
+        sqs_client = boto3.client('sqs', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        if sqs_client==None:
             loger.error('AWS sqs connect failed')
             return none
-        ret = sqs_connection.create_queue(queue_name)
+        ret = sqs_client.create_queue(QueueName=queue_name)
         if ret==None:
             logger.error('AWS queue create failed for %s' % queue_name)
         return ret
        
     def purge_queue(self, queue_name):
-        sqs_connection = boto.connect_sqs(aws_access_key_id=self._conf['SQS_KEYID'], aws_secret_access_key=self._conf['SQS_KEY'])
-        queue = sqs_connection.get_queue(queue_name)
-        if queue==None:
+        sqs_client = boto3.client('sqs', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queue_url = sqs_client.get_queue_url(queue_name)
+        if queue_url==None:
             logger.critical("Could not connect to '%s'!" % (queue_name))
             return queue
-        ret = sqs_connection.purge_queue(queue);
+        ret = sqs_client.purge_queue(queue);
         logger.debug('purge status = {}'.format(ret))
         return ret
 
     def delete_queue(self, queue_name):
-        sqs_connection = boto.connect_sqs(aws_access_key_id=self._conf['SQS_KEYID'], aws_secret_access_key=self._conf['SQS_KEY'])
-        queue = sqs_connection.get_queue(queue_name)
-        if queue==None:
+        sqs_client = boto3.client('sqs', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queue_url = sqs_client.get_queue_url(queue_name)
+        if queue_url==None:
             logger.critical("Could not connect to '%s'!" % (queue_name))
             return queue
-        ret = sqs_connection.delete_queue(queue);
+        ret = sqs_client.delete_queue(QueueUrl=queue);
         logger.debug('delete status = {}'.format(ret))
         return ret
 
-    def recv_message(self):
-        sqs_queue = self.get_queue()
-        sqs_msg = sqs_queue.read()
+    def recv_message(self, queue_name):
+        sqs_client = boto3.client('sqs', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queue_url = sqs_client.get_queue_url(queue_name)
+        sqs_msg = sqs_client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=1)
         if sqs_msg == None:
             return None
         sqsmsg = json.loads(sqs_msg.get_body())
@@ -164,9 +158,10 @@ class Live(object):
             sqs_queue.delete_message(sqs_msg)
         return msg
     
-    def recv_and_process(self, handler, max=1):
-        sqs_queue = self.get_queue()
-        msgs = sqs_queue.get_messages(max)
+    def recv_and_process(self, handler, queue_name):
+        sqs_client = boto3.client('sqs', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queue_url = sqs_client.get_queue_url(queue_name)
+        msgs = sqs_client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=max)
         nmsg = len(msgs)
         logger.info('live recv-proc: %d msg, max=%d' % (nmsg, max))
         nvalid = 0
@@ -191,13 +186,13 @@ class Live(object):
 
 
     def get_all_subscriptions_by_topic(self, topic):
-        sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
-        queues = sns_connection.get_all_subscriptions_by_topic(topic)
+        sns_client = boto3.client('sns', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        queues = sns_client.list_subscriptions_by_topic(TopicArn=topic)
         return queues
        
     def add_permission(self, topic_name, label, account, permission):
-        sns_connection = boto.connect_sns(aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
-        ret = sns_connection.add_permission(topic_name, label, account, permission)
+        sns_client = boto3.client('sns', aws_access_key_id=self._conf['SNS_KEYID'], aws_secret_access_key=self._conf['SNS_KEY'])
+        ret = sns_client.add_permission(TopicArn=topic_name, Label=label, AWSAccountId=account, ActionName=permission)
         return ret
        
 

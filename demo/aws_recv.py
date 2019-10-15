@@ -2,6 +2,7 @@
 # IAM AWS messaging tools
 #
 # sample sqs reciever
+# boto3 version
 #
 
 import json
@@ -19,6 +20,7 @@ from optparse import OptionParser
 import threading
 
 import logging
+import logging.config
 logger = logging.getLogger()
 
 from messagetools.iam_message import crypt_init
@@ -72,7 +74,7 @@ parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='
 parser.add_option('-c', '--conf', action='store', type='string', dest='config', help='config file')
 parser.add_option('-m', '--max_messages', action='store', type='int', dest='maxmsg', help='maximum messages to process')
 parser.add_option('', '--count', action='store_true', dest='count_only', help='just count the messages onthe queue', default=False)
-parser.add_option('-q', '--queue', action='store', type='string', dest='queue', help='queue name')
+parser.add_option('-q', '--queue', action='store', type='string', dest='queue', help='queue url')
 parser.add_option('-l', '--log', action='store', type='string', dest='log', help='log name')
 options, args = parser.parse_args()
 
@@ -119,9 +121,9 @@ aws = AWS(settings.AWS_CONF)
 nmsg = 0
 while still_alive:
 
-   message = aws.recv_message()
-   # print (message)
-   if message==None: 
+   status, msgs = aws.recv_message(options.queue)
+   print (msgs)
+   if msgs==None: 
       sleep_sec = 300
       if idle5>0:
          idle5 += 1
@@ -135,6 +137,14 @@ while still_alive:
       continue
     
    idle1 = idle5 = 0     
+
+   if len(msgs)==0:
+       print('not iam?')
+       continue
+
+   handle,message = msgs[0]
+   print (message)
+   
    hdr = message[u'header']
    print ('message received: ' + hdr[u'timestamp'])
    if verbose:
@@ -144,12 +154,13 @@ while still_alive:
        print ('sender: ' + hdr[u'sender'])
    if verbose:
        print ('contentType: ' + hdr[u'contentType'])
-   context = json.loads(hdr[u'messageContext'])
-   if 'group' in context:
-       print ('group: [%s]\n' % context['group'])
-   if 'targets' in context:
-       for tgt in context['targets']:
-           print ('target: ' + tgt['target'])
+   if hdr[u'messageType'] == 'gws':
+       context = json.loads(hdr[u'messageContext'])
+       if 'group' in context:
+           print ('group: [%s]\n' % context['group'])
+       if 'targets' in context:
+           for tgt in context['targets']:
+               print ('target: ' + tgt['target'])
    if verbose:
        print ('message: [%s]' % message[u'body'])
 
