@@ -1,2 +1,0 @@
-{"body": "Hello, world, from py.", "header": {"contentType": "json", "sender": "iam-msg", "timestamp": "2015-05-06T20:55:45.214492", "messageId": "530b1e9e-8f67-4e38-b0bd-0c3bb09dce27", "messageType": "iam-test", "version": "UWIT-1", "messageContext": "something specific to the test", "signature": "UjZZW/HpPI2xY5otnqltFzi2PFjspZqUxAWEPipgtV/WgLyRNy1NOjmrzCJl7C8cykDojhO74eN8XTzqjvxFONo6DROktJGU5s/Hb2qWccQHhptxkiraMziEdaKuD0s4VmdvBT6f/JBGh5ZNGV0rmGfjDMPqRn34Ze70eLZj8cY=", "signingCertUrl": "file:z.crt"}}
-
