@@ -19,7 +19,7 @@ list_queue_url_1 = 'https://us-west-2.queue.amazonaws.com/611509864246/json-test
 
 list_topics_response_1 = {
     'Topics': [
-        {'TopicArn': 'arn:aws:sns:us-west-2:611509864246:json-test-1'}, 
+        {'TopicArn': 'arn:aws:sns:us-west-2:611509864246:json-test-1'},
         {'TopicArn': 'arn:aws:sns:us-west-2:611509864246:topic_name'}
     ],
     'ResponseMetadata': {

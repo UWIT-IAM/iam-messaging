@@ -14,7 +14,7 @@ def test_crypt_decrypt():
     sigkey = 'test-iamsig1'
     cryptkey = 'test-iamcrypt2'
     enc_msg = encode_message(settings.crypt_message, settings.crypt_context, cryptkey, sigkey)
-    
+
     # save the encoded message for other tests
     print(enc_msg, file=open('/tmp/enc.txt', 'w'))
 

@@ -32,8 +32,6 @@
 # most ops use QueueUrl
 # get url wants QueueName and QueueOwnerAWSAccountId
 
-
-
 import re
 
 import boto3
@@ -57,6 +55,7 @@ sns_max_len = 260000
 sns_default_subject = 'IAM Message'
 
 # client error decorators
+
 
 def safe_sqs(func):
     def func_wrapper(*args, **kwargs):
@@ -103,7 +102,7 @@ class AWS(object):
         if arn is None:
             arn = self._conf['SNS_ARN']
         if len(b64msg) > sns_max_len:
-            raise ClientException('Message too long for SNS send.') 
+            raise ClientException('Message too long for SNS send.')
         rsp = sns_client.publish(TopicArn=arn, Message=b64msg, Subject=subject, MessageStructure='string', MessageAttributes=attributes)
         return _status(rsp)
 

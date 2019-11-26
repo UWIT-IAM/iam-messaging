@@ -68,5 +68,5 @@ signid = 'iamsig1'
 context = 'something specific to the test'
 b64msg = encode_message(msg, context, cryptid, signid)
 
-attrs={'iam_attrs_1': {'DataType': 'String', 'StringValue': 'test aws_send'}, 'iam_attrs_2': {'DataType': 'String', 'StringValue': 'boto3 '}}
+attrs = {'iam_attrs_1': {'DataType': 'String', 'StringValue': 'test aws_send'}, 'iam_attrs_2': {'DataType': 'String', 'StringValue': 'boto3 '}}
 aws.send_message(b64msg, arn=arn, attributes=attrs)
