@@ -1,0 +1,8 @@
+
+Note.  This branch cannot read and parse UWIT-1 messages.  The sign and crypt of UWIT-1 are non-standard.
+
+usage:
+
+. ../env3-m2crypt/bin/activate
+
+export PYTHONPATH=..

@@ -63,21 +63,16 @@ logging.info("sws queue monitor starting.")
 aws = AWS(settings.AWS_CONF)
 
 if options.operation == 'lt':
-    print('list topics ')
+    print('topic arns:')
     status, topics = aws.list_topics()
-    print (topics)
     for topic in topics:
         print(topic['TopicArn'])
-        if options.verbose:
-            print(topic.get_attributes)
 
 if options.operation == 'lq':
-    print('list queues ')
+    print('queue urls:')
     status, queues = aws.list_queues()
     for q in queues:
-        print(q.arn)
-        if options.verbose:
-            print(q.get_attributes)
+        print(q)
 
 if options.operation == 'lqt':
     if options.topic is None:

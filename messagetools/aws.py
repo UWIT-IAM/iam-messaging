@@ -111,7 +111,6 @@ class AWS(object):
     def list_topics(self):
         sns_client = boto3.client('sns')
         rsp = sns_client.list_topics()
-        print(rsp)
         return _status(rsp), rsp['Topics']
 
     # returns list of queue urls
@@ -165,9 +164,9 @@ class AWS(object):
 
     # returns array of {'ReceiptHandle': handle, 'Body': text}
     @safe_sqs
-    def recv_message(self, queue):
+    def recv_message(self, queue, max_messages=1):
         sqs_client = boto3.client('sqs')
-        rsp = sqs_client.receive_message(QueueUrl=queue, MaxNumberOfMessages=1)
+        rsp = sqs_client.receive_message(QueueUrl=queue, MaxNumberOfMessages=max_messages)
         if 'Messages' not in rsp:
             return 404, None
         msgs = []

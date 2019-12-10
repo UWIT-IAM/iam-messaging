@@ -24,4 +24,5 @@ class TestAWS():
         status, list = self.aws.list_topics()
         assert mock_client.called_once()
         assert status == 200
-        # assert list[0] == aws_mock_data.list_queue_url_1
+        assert list[0]['TopicArn'] in aws_mock_data.list_topics_arns
+        assert list[1]['TopicArn'] in aws_mock_data.list_topics_arns

@@ -19,7 +19,6 @@ class mock_sqs_client():
 
     def list_queues():
         print('** sqs list_queues **')
-        # self.called += 1
         return aws_mock_data.list_queues_response_1
 
     def called_once(self):

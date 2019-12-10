@@ -14,9 +14,10 @@ list_queues_response_1 = {
         'RetryAttempts': 0
     }
 }
-
+# url from above
 list_queue_url_1 = 'https://us-west-2.queue.amazonaws.com/611509864246/json-test-recv-1'
 
+# AWS list topics
 list_topics_response_1 = {
     'Topics': [
         {'TopicArn': 'arn:aws:sns:us-west-2:611509864246:json-test-1'},
@@ -34,3 +35,9 @@ list_topics_response_1 = {
         'HTTPStatusCode': 200
     }
 }
+list_topics_arns = [
+ 'arn:aws:sns:us-west-2:611509864246:json-test-1',
+ 'arn:aws:sns:us-west-2:611509864246:topic_name'
+]
+
+

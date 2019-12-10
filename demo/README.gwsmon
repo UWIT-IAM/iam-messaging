@@ -1,0 +1,9 @@
+. ../env3-m2crypt/bin/activate
+export PYTHONPATH=..
+
+python aws_recv.py -q iam-gws-prod-fox -m 1000000 -c settings.py -l msg.log &
+
+  or 
+
+python aws_recv.py -q iam-gws-prod-targeted-fox -m 1000000 -c settings.py -l rmsg.log &
+

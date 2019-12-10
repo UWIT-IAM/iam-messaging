@@ -4,3 +4,12 @@ activate the python virtual env
 export PYTHONPATH=..
 
 
+
+this will generate a random crypt key
+
+  $ echo -n `uuidgen | tr -d '-'` | openssl enc -a
+
+
+this generates a batch of random lines
+
+  $ < /dev/urandom tr -dc "\t\n [:alnum:]" | head -c5000 > sigtest.msg

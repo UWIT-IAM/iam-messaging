@@ -74,7 +74,7 @@ _sender = 'iam'
 logger = logging.getLogger(__name__)
 
 #
-# accumulate header fields for signature
+# Accumulate header fields for signature
 #
 
 
@@ -89,11 +89,12 @@ def _build_sig_msg(header, txt):
     return sigmsg.encode('ascii')
 
 #
-#  create a signed (and encrypted) iam message
+#  create a signed (maybe encrypted) iam message
 #
-#  msg is anything
-#  context is string
-
+#  msg: any string
+#  context: string
+#  cryptid: encryption key, None for no encryption
+#  signid: signing key id
 
 def encode_message(msg, context, cryptid, signid):
 
@@ -101,8 +102,8 @@ def encode_message(msg, context, cryptid, signid):
     iamHeader['contentType'] = 'json'
     iamHeader['version'] = 'UWIT-2'
     iamHeader['messageType'] = 'iam-test'
-    u = uuid.uuid4()
-    iamHeader['messageId'] = str(u)
+    # u = uuid.uuid4()
+    iamHeader['messageId'] = str(uuid.uuid4())
     iamHeader['messageContext'] = base64.b64encode(context.encode('utf-8', 'ignore')).decode('utf-8', 'ignore')
     iamHeader['sender'] = _sender
 
@@ -130,14 +131,24 @@ def encode_message(msg, context, cryptid, signid):
 
     # gen the signature
     sigmsg = _build_sig_msg(iamHeader, enctxt64)
-    # print (sigmsg)
+    # print ('sigmsg:' + sigmsg.decode('utf-8'))
 
     key = _private_keys[signid]['key']
     pre = hashlib.sha256(sigmsg).digest()
-    sig = key.sign(pre, a_padding.PSS(mgf=a_padding.MGF1(hashes.SHA256()), salt_length=a_padding.PSS.MAX_LENGTH), hashes.SHA256())
+    
+    # some advise the use of 'PSS.MAX_LENGTH' for the salt length, but
+    # I don't see how that works with other languages
+
+    sig = key.sign(sigmsg, a_padding.PSS(mgf=a_padding.MGF1(hashes.SHA256()), salt_length=32), hashes.SHA256())
     sig64 = base64.b64encode(sig).decode('utf-8', 'ignore')
     # print ('enc sig64 = ' + sig64)
     iamHeader['signature'] = sig64
+
+    # debugging stuff
+    # with open('sigmsg', 'w') as f:
+    #    f.write(sigmsg.decode('utf-8'))
+    # with open('sigsig', 'wb') as f:
+    #    f.write(sig)
 
     body = {}
     body['Message'] = enctxt64
@@ -150,16 +161,16 @@ def encode_message(msg, context, cryptid, signid):
     return m64
 
 #
-#  receive a signed (and encrypted) iam message
+#  receive a signed (maybe encrypted) iam message
 #
-
+#  should throw error, not return None
 
 def decode_message(b64msg):
     global _crypt_keys
     global _public_keys
     global _ca_file
 
-    # get the iam message
+    # get the message
     try:
         msgstr = base64.b64decode(b64msg).decode('utf-8', 'ignore')
         iam_message = json.loads(msgstr)
@@ -178,7 +189,7 @@ def decode_message(b64msg):
             logging.error('unknown version: ' + iamHeader[u'version'])
             return None
 
-        # the signing cert should be cached most of the time
+        # fetch the signing cert if it's not cached
         certurl = iamHeader[u'signingCertUrl']
         if certurl not in _public_keys:
             logging.info('Fetching signing cert: ' + certurl)
@@ -219,7 +230,7 @@ def decode_message(b64msg):
         # print('dec sig = ' + iamHeader[u'signature'])
         sig = base64.b64decode(iamHeader[u'signature'].encode('utf-8', 'ignore'))
         pubkey = _public_keys[certurl]
-        pubkey.verify(sig, pre, a_padding.PSS(mgf=a_padding.MGF1(hashes.SHA256()), salt_length=a_padding.PSS.MAX_LENGTH), hashes.SHA256())
+        pubkey.verify(sig, sigmsg, a_padding.PSS(mgf=a_padding.MGF1(hashes.SHA256()), salt_length=32), hashes.SHA256())
 
         # decrypt the message
         if 'keyId' in iamHeader:
@@ -243,11 +254,8 @@ def decode_message(b64msg):
 
         txt = txt.decode('utf-8', 'ignore')
 
-        # print ('in[%d %s]'%(len(txt),txt))
-        # _txt = list(filter(lambda x: x in string.printable, txt))
-        # print ('out[%s]'%(_txt))
         iam_message[u'body'] = txt
-        # un-base64 the context
+        # context is b64 encoded
         try:
             iamHeader[u'messageContext'] = base64.b64decode(iamHeader[u'messageContext'].encode('utf-8', 'ignore')).decode('utf-8', 'ignore')
         except TypeError:
@@ -294,7 +302,7 @@ def crypt_init(cfg):
         kbin = base64.b64decode(k64.encode('utf-8', 'ignore'))
         _crypt_keys[id] = kbin
 
-    # are we verifying certs ( just for the signing cert )
+    # are we verifying URLs (for the signing certs)
     if 'ca_file' in cfg:
         _ca_file = cfg['CA_FILE']
 
