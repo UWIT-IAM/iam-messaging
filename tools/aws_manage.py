@@ -19,6 +19,7 @@ import logging
 
 from messagetools.iam_message import crypt_init
 from messagetools.aws import AWS
+from messagetools.exceptions import AWSException
 
 import settings
 
@@ -57,9 +58,6 @@ def _need_full(name, typ):
 
 
 crypt_init(settings.IAM_CONF)
-
-logging.info("sws queue monitor starting.")
-
 aws = AWS(settings.AWS_CONF)
 
 if options.operation == 'lt':
@@ -70,7 +68,10 @@ if options.operation == 'lt':
 
 if options.operation == 'lq':
     print('queue urls:')
-    status, queues = aws.list_queues()
+    try:
+        status, queues = aws.list_queues()
+    except AWSException as e:
+        print(str(e))
     for q in queues:
         print(q)
 
@@ -80,7 +81,11 @@ if options.operation == 'lqt':
         exit
     print('list queues for topic: ' + options.topic)
     _need_full(options.topic, 'topic')
-    status, queues = aws.list_subscriptions_by_topic(options.topic)
+    try:
+        status, queues = aws.list_subscriptions_by_topic(options.topic)
+    except AWSException as e:
+        print(str(e))
+        exit(1)
     # print(queues)
     for queue in queues['ListSubscriptionsByTopicResponse']['ListSubscriptionsByTopicResult']['Subscriptions']:
         print(queue['Endpoint'])

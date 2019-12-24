@@ -85,5 +85,11 @@ LOGGING = {
     },
 }
 
-crypt_message = 'Hello, world.'
-crypt_context = 'xxxxxxxxx'
+crypt_header = {
+    'contentType':'plain',
+    'messageType':'test-0',
+    'sender':'fox',
+    'messageContext':'Hello, world.'
+}
+crypt_message = 'Every good boy and girl does fine.'
+

@@ -13,11 +13,11 @@ def test_crypt_decrypt():
 
     sigkey = 'test-iamsig1'
     cryptkey = 'test-iamcrypt2'
-    enc_msg = encode_message(settings.crypt_message, settings.crypt_context, cryptkey, sigkey)
+    enc_msg = encode_message(settings.crypt_message, settings.crypt_header, cryptkey, sigkey)
 
     # save the encoded message for other tests
     print(enc_msg, file=open('/tmp/enc.txt', 'w'))
 
     dec_msg = decode_message(enc_msg)
     assert dec_msg['body'] == settings.crypt_message
-    assert dec_msg['header']['messageContext'] == settings.crypt_context
+    assert dec_msg['header']['messageContext'] == settings.crypt_header['messageContext']

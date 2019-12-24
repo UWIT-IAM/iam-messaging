@@ -42,9 +42,7 @@ from copy import deepcopy
 
 from messagetools.iam_message import encode_message
 from messagetools.iam_message import decode_message
-from messagetools.exceptions import TopicNotFoundException
-from messagetools.exceptions import QueueNotFoundException
-from messagetools.exceptions import ClientException
+from messagetools.exceptions import AWSException
 
 import logging
 logger = logging.getLogger(__name__)
@@ -62,9 +60,9 @@ def safe_sqs(func):
         try:
             return func(*args, **kwargs)
         except boto3.client('sqs').exceptions.QueueDoesNotExist as e:
-            raise QueueNotFoundException(' '.join(e.args))
+            raise AWSException(' '.join(e.args))
         except boto3.client('sqs').exceptions.ClientError as e:
-            raise ClientException(' '.join(e.args))
+            raise AWSException(' '.join(e.args))
     return func_wrapper
 
 
@@ -72,12 +70,12 @@ def safe_sns(func):
     def func_wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except boto3.client('sns').exceptions.NotFoundException:
-            raise TopicNotFoundException(' '.join(e.args))
-        except boto3.client('sns').exceptions.InvalidParameterException:
-            raise ClientException(' '.join(e.args))
+        except boto3.client('sns').exceptions.NotFoundException as e:
+            raise AWSException(' '.join(e.args))
+        except boto3.client('sns').exceptions.InvalidParameterException as e:
+            raise AWSException(' '.join(e.args))
         except boto3.client('sns').exceptions.ClientError as e:
-            raise ClientException(' '.join(e.args))
+            raise AWSException(' '.join(e.args))
     return func_wrapper
 
 # status from response
@@ -102,7 +100,7 @@ class AWS(object):
         if arn is None:
             arn = self._conf['SNS_ARN']
         if len(b64msg) > sns_max_len:
-            raise ClientException('Message too long for SNS send.')
+            raise AWSException('Message too long for SNS send.')
         rsp = sns_client.publish(TopicArn=arn, Message=b64msg, Subject=subject, MessageStructure='string', MessageAttributes=attributes)
         return _status(rsp)
 
