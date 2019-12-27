@@ -70,6 +70,8 @@ _ca_file = None
 #
 # Accumulate header fields for signature
 #
+
+
 def _build_sig_msg(header, txt):
     sigmsg = header[u'contentType'] + '\n'
     if 'keyId' in header:
@@ -83,10 +85,12 @@ def _build_sig_msg(header, txt):
 
 # test if str is 'simple'
 _simple_allowed = set(string.ascii_letters + string.digits + '-')
+
+
 def _if_simple(str):
-   if set(str) <= _simple_allowed:
-       return str
-   raise MessageException('Invalid message header information', MessageException.invalid_header)
+    if set(str) <= _simple_allowed:
+        return str
+    raise MessageException('Invalid message header information', MessageException.invalid_header)
 
 #
 #  create a signed (maybe encrypted) iam message
@@ -99,6 +103,7 @@ def _if_simple(str):
 #      messageContext: string
 #  cryptid: encryption key, None for no encryption
 #  signid: signing key id
+
 
 def encode_message(msg, header, cryptid, signid):
 
@@ -139,7 +144,7 @@ def encode_message(msg, header, cryptid, signid):
 
     key = _private_keys[signid]['key']
     pre = hashlib.sha256(sigmsg).digest()
-    
+
     # some advise the use of 'PSS.MAX_LENGTH' for the salt length, but
     # I don't see how that works with other languages
 
@@ -167,6 +172,7 @@ def encode_message(msg, header, cryptid, signid):
 #
 #  receive a signed (maybe encrypted) iam message
 #
+
 
 def decode_message(b64msg):
     global _crypt_keys
@@ -267,7 +273,7 @@ def decode_message(b64msg):
     except InvalidSignature as e:
         logger.error('signature verify fails')
         raise SignatureVerifyException(str(e))
-        
+
     except KeyError as e:
         if 'AlarmName' in iam_message:
             logger.debug('alarm: ' + iam_message['AlarmName'])

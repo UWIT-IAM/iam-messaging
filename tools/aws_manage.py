@@ -31,7 +31,7 @@ import settings
 
 parser = OptionParser()
 parser.add_option('-o', '--operation', action='store', type='string', dest='operation',
-                  help='cq=create_queue, ct=create_topic, sq=subscribe_queue, pq=purge_queue, dq=delete_queue,' \
+                  help='cq=create_queue, ct=create_topic, sq=subscribe_queue, pq=purge_queue, dq=delete_queue,'
                   'lq=list_queue(s), lt=list_topics, lqt=list_queues_for_topic, ltq=list_topics_for_queue ')
 parser.add_option('-t', '--topic', action='store', type='string', dest='topic', help='topic')
 parser.add_option('-q', '--queue', action='store', type='string', dest='queue', help='queue')
