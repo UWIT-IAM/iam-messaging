@@ -1,7 +1,8 @@
-boto
-azure-servicebus
+boto3
+simplejson>=2.1
 python-dateutil>=2.1
 unittest2>=0.5.1
+cryptography
 urllib3
-M2Crypto
-
+pytest
+pycodestyle

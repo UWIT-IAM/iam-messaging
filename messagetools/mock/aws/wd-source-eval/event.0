@@ -1,3 +1,0 @@
-{"body": "{\"type\":\"insert\",\"regid\":\"6D3998CA624E4F11886ECB75770C1341\",\"source\":\"1\",\"id\":\"881001412\"}", "header": {"contentType": "json", "sender": "idregistry", "timestamp": "2015-04-09T19:53:14.905Z", "messageType": "idreg", "version": "UWIT-1", "messageContext": "{\"system_type\":\"eval\",\"version\":\"v1\",\"topic\":\"source\"}", "messageId": "777e9e37-e56d-831f-e3a3-fc5b55302bb6", "signingCertUrl": "https://groups.uw.edu/pubkeys/sign1.crt"}}
-
-
