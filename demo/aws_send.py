@@ -39,7 +39,7 @@ parser.add_option('-c', '--conf', action='store', type='string', dest='config', 
 parser.add_option('-n', '--nocrypt', action='store_true', dest='nocrypt', default='false', help='dont encrypt message')
 options, args = parser.parse_args()
 
-print logging
+print(logging)
 
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger()
@@ -47,7 +47,7 @@ logger.info("aws event sender starting.")
 
 crypt_init(settings.IAM_CONF)
 
-msg = 'Hello, world, from py.'
+msg = 'Hello, world, from py..'
 if options.message!=None:
    msg = options.message
 

@@ -50,16 +50,16 @@ with open('sigtest.enc','w') as f:
 
 # use the on eon file
 
-with open('sigtest.enc','rib') as f:
+with open('sigtest.enc','rb') as f:
     b = f.read()
 
 c = decode_message(b)
-print c
+print (c)
 msgout = c['body']
 if msgout == msg:
-    print 'Success'
+    print ('Success')
 else:
-    print 'Fail'
+    print ('Fail')
 
 
 

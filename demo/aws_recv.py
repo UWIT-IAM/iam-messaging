@@ -33,6 +33,7 @@ last_event_received = start_time
 last_event_time = 0
 num_events = 0
 
+verbose=False
 
 # -------------------------------------
 #
@@ -71,6 +72,8 @@ parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='
 parser.add_option('-c', '--conf', action='store', type='string', dest='config', help='config file')
 parser.add_option('-m', '--max_messages', action='store', type='int', dest='maxmsg', help='maximum messages to process')
 parser.add_option('', '--count', action='store_true', dest='count_only', help='just count the messages onthe queue', default=False)
+parser.add_option('-q', '--queue', action='store', type='string', dest='queue', help='queue name')
+parser.add_option('-l', '--log', action='store', type='string', dest='log', help='log name')
 options, args = parser.parse_args()
 
 max_messages = 10
@@ -100,40 +103,63 @@ signal.signal(signal.SIGUSR1, signal_handler)
 idle1 = 0  # 1 minute counter
 idle5 = 0  # 5 minute counter
 
+if options.queue is not None:
+   settings.AWS_CONF['SQS_QUEUE'] = options.queue
+if options.verbose:
+   verbose = True
+
+logfile = None
+if options.log is not None:
+    logfile = open(options.log, 'a')
+
+
+print('Listening on SQS queue ' + settings.AWS_CONF['SQS_QUEUE'])
 aws = AWS(settings.AWS_CONF)
 
 nmsg = 0
 while still_alive:
 
    message = aws.recv_message()
-   print message
+   # print (message)
    if message==None: 
-      sleep_sec = 1800
+      sleep_sec = 300
       if idle5>0:
          idle5 += 1
-         sleep_sec = 300
+         sleep_sec = 60
       else:
          idle1 += 1 
          if idle1>=10: idle5 = 1
-         sleep_sec = 60
+         sleep_sec = 10
       logging.debug('sleep %d seconds' % (sleep_sec))
       time.sleep(sleep_sec)
       continue
     
    idle1 = idle5 = 0     
    hdr = message[u'header']
-   print 'message received: type: ' + hdr[u'messageType']
-   print 'uuid: ' + hdr[u'messageId']
-   print 'sent: ' + hdr[u'timestamp']
-   print 'sender: ' + hdr[u'sender']
-   print 'contentType: ' + hdr[u'contentType']
-   print 'context: [%s]' % hdr[u'messageContext']
-   print 'message: [%s]' % message[u'body']
+   print ('message received: ' + hdr[u'timestamp'])
+   if verbose:
+       print(message[u'header'])
+   # print ('uuid: ' + hdr[u'messageId'])
+   if hdr[u'sender'] != 'gws':
+       print ('sender: ' + hdr[u'sender'])
+   if verbose:
+       print ('contentType: ' + hdr[u'contentType'])
+   context = json.loads(hdr[u'messageContext'])
+   if 'group' in context:
+       print ('group: [%s]\n' % context['group'])
+   if 'targets' in context:
+       for tgt in context['targets']:
+           print ('target: ' + tgt['target'])
+   if verbose:
+       print ('message: [%s]' % message[u'body'])
+
+   if logfile is not None:
+       logfile.write('%s %s\n' % (hdr[u'timestamp'], message[u'body']))
 
    nmsg += 1
    if nmsg==max_messages:
       break
 
 logger.info('Exiting')
-print '%d messages processed' %(nmsg)
+print ('%d messages processed' %(nmsg))
 
