@@ -148,17 +148,15 @@ def decode_message(b64msg):
     global _ca_file 
 
     # get the iam message
-    try:
-        msgstr = base64.b64decode(b64msg).decode()
-    except TypeError:
-        logger.info( 'Not an IAM message: not base64')
-        return None
-    iam_message = json.loads(msgstr)
+        msgstr = base64.b64decode(b64msg).decode('utf-8', 'ignore')
+        iam_message = json.loads(msgstr)
+    except json.decoder.JSONDecodeError as e:
+        logging.info('Not an iam message: invalid json')
+        raise MessageException('Not an iam message: invalid json', MessageException.not_iam_message)
 
-
-    if u'header' not in iam_message: 
-        logger.info('not an iam message')
-        return None
+    if 'header' not in iam_message:
+        logging.info('Not an iam message: no header')
+        raise MessageException('Not an iam message: no header', MessageException.not_iam_message)
     iamHeader = iam_message['header']
 
     try:
