@@ -8,4 +8,8 @@ These libraries send and receive messages on AWS message busses.
 
 For AWS some topic and queue management functions are provided.
 
-More to come
+## Other language implementations
+
+* [c](https://github.com/UWIT-IAM/iam-messaging-c)
+* [java](https://github.com/UWIT-IAM/iam-messaging-java)
+

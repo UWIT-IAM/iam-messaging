@@ -65,7 +65,12 @@ arn = options.arn
 aws = AWS(settings.AWS_CONF)
 
 signid = 'iamsig1'
-context = 'something specific to the test'
+context = {}
+context['contentType'] = 'json'
+context['messageType'] = 'iam-messaging-sender-test'
+context['messageContext'] = 'something specific to the test'
+context['sender'] = 'x179'
+
 b64msg = encode_message(msg, context, cryptid, signid)
 
 attrs = {'iam_attrs_1': {'DataType': 'String', 'StringValue': 'test aws_send'}, 'iam_attrs_2': {'DataType': 'String', 'StringValue': 'boto3 '}}

@@ -96,7 +96,7 @@ def _if_simple(str):
 #  create a signed (maybe encrypted) iam message
 #
 #  msg: string
-#  header:
+#  header: {}
 #      contentType:    simple string (letters digits '-')
 #      messageType:    simple string
 #      sender:         string string

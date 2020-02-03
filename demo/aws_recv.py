@@ -118,7 +118,7 @@ if options.log is not None:
     logfile = open(options.log, 'a')
 
 
-print('Listening on SQS queue ' + settings.AWS_CONF['SQS_QUEUE'])
+print('Listening on SQS queue ' + options.queue)
 aws = AWS(settings.AWS_CONF)
 
 nmsg = 0
