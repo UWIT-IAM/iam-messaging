@@ -157,7 +157,6 @@ class Live(object):
         if sqs_msg == None:
             return None
         sqsmsg = json.loads(sqs_msg.get_body())
-        # sqsmsg = json.loads(sqs_msg.get_body().encode('utf8','ignore'))
         msg = decode_message(sqsmsg['Message'])
         logger.debug('live recv: [%s]' % json.dumps(msg))
         if msg != None:
@@ -171,7 +170,7 @@ class Live(object):
         logger.info('live recv-proc: %d msg, max=%d' % (nmsg, max))
         nvalid = 0
         for m in msgs:
-            sqsmsg = json.loads(m.get_body().encode('utf8','ignore'))
+            sqsmsg = json.loads(m.get_body())
             msg = decode_message(sqsmsg['Message'])
             if msg==None:
                 sqs_queue.delete_message(m)
