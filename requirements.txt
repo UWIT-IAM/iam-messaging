@@ -1,5 +1,5 @@
 boto
-azure-servicebus
+azure-servicebus==0.21.0
 python-dateutil>=2.1
 unittest2>=0.5.1
 urllib3
